@@ -111,16 +111,28 @@ async def check_user_limit(user_id, files_count):
 
     return True, f"ʀᴇᴍᴀɪɴɪɴɢ: {remaining - files_count} ᴀғᴛᴇʀ ᴛʜɪs ᴏᴘᴇʀᴀᴛɪᴏɴ"
 
-async def rename_file(mega_session, old_name, file_id, prefix):
+async def rename_file(mega_session, file, prefix):
     """Rename a single file."""
+    old_name = ""
+    if isinstance(file.get('a'), dict):
+        old_name = file['a'].get('n', '')
+    elif isinstance(file.get('a'), str):
+        try:
+            parsed = json.loads(file['a'])
+            old_name = parsed.get('n', '') if isinstance(parsed, dict) else ''
+        except:
+            pass
+
     try:
+        if not old_name:
+            return 'failed', 'unknown', 'Cannot determine file name'
         if has_prefix_already(old_name, prefix):
             return 'skipped', old_name, None
 
         new_name = generate_new_filename(old_name, prefix)
 
         await asyncio.get_event_loop().run_in_executor(
-            None, mega_session.rename, file_id, new_name
+            None, mega_session.rename, file, new_name
         )
         return 'success', old_name, new_name
     except Exception as e:
@@ -129,7 +141,7 @@ async def rename_file(mega_session, old_name, file_id, prefix):
 
 async def optimized_batch_rename_async(mega_session, batch_files, prefix, user_id, progress_callback=None):
     """Async optimized batch rename with prefix only"""
-    tasks = [rename_file(mega_session, old_name, file_id, prefix) for old_name, file_id in batch_files]
+    tasks = [rename_file(mega_session, file, prefix) for file in batch_files]
     results = await asyncio.gather(*tasks)
 
     if progress_callback:
@@ -297,7 +309,7 @@ async def handle_mega_folder_processing_async(mega_session, message, prefix, use
                     pass
 
             if old_name and is_media_file(old_name) and not has_prefix_already(old_name, prefix):
-                media_files_to_process.append((old_name, file_id))
+                media_files_to_process.append(file_data)
 
         total_media_files = len(media_files_to_process)
         if total_media_files == 0:
@@ -637,7 +649,7 @@ async def quick_test(client, message):
                         pass
 
                 if old_name and is_media_file(old_name) and not has_prefix_already(old_name, prefix):
-                    media_files.append((old_name, file_id))
+                    media_files.append(file_data)
 
             if not media_files:
                 return await status.edit("✅ **ɴᴏ ᴍᴇᴅɪᴀ ғɪʟᴇs ɴᴇᴇᴅ ʀᴇɴᴀᴍɪɴɢ ɪɴ ғɪʀsᴛ 10!**")
