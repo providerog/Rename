@@ -137,7 +137,7 @@ async def optimized_batch_rename_async(mega_session, batch_files, prefix, user_i
             extension = get_file_extension(old_name)
             
             # Create new name with just prefix + extension
-            new_name = f"{prefix}{extension}"
+            new_name = generate_new_filename(old_name, prefix)
             
             # Try direct rename first (run in executor to avoid blocking)
             try:
