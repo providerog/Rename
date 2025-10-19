@@ -201,20 +201,6 @@ def get_readable_time(seconds):
 
     return ', '.join(result)
 
-# The following functions are commented out as they call non-existent database functions
-# and would cause a NameError. This is a separate bug that needs to be addressed.
-# async def get_verify_status(user_id):
-#     verify = await db_verify_status(user_id)
-#     return verify
-
-# async def update_verify_status(user_id, verify_token="", is_verified=False, verified_time=0, link=""):
-#     current = await db_verify_status(user_id)
-#     current['verify_token'] = verify_token
-#     current['is_verified'] = is_verified
-#     current['verified_time'] = verified_time
-#     current['link'] = link
-#     await db_update_verify_status(user_id, current)
-
 def generate_token():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=10))
 
