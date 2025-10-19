@@ -31,7 +31,7 @@ SAVE_CHAT = -1002728160601
 # 🗄️ DATABASE SETTINGS
 # ═══════════════════════════════════════════════════════════════════════════════════
 
-DB_URL = os.environ.get("DB_URL", "mongodb+.s42kf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+DB_URL = os.environ.get("DB_URL", "mongodb://localhost:27017/")
 DB_NAME = os.environ.get("DB_NAME", "billu")
 
 # ═══════════════════════════════════════════════════════════════════════════════════
@@ -89,7 +89,7 @@ You've reached the free limit of {free_limit} files!
 **Choose a Premium Plan:**
 
 🔥 **7 Days** - ₹99
-⚡ **3 Months** - ₹299  
+⚡ **3 Months** - ₹299
 🚀 **6 Months** - ₹499
 
 **Premium Benefits:**
