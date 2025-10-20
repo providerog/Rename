@@ -196,9 +196,16 @@ async def mega_login(client, message):
             )
             mega_sessions[message.from_user.id] = session
 
-            # Save to database
-            await db.save_mega_session(message.from_user.id, email, password)
-            await status.edit("<blockquote>✅ sᴜᴄᴄᴇssғᴜʟʟʏ ʟᴏɢɢᴇᴅ ɪɴᴛᴏ ᴍᴇɢᴀ.ɴᴢ..!</blockquote>")
+            # Save to database and verify
+            saved_successfully = await db.save_mega_session(message.from_user.id, email, password)
+            if saved_successfully:
+                await status.edit("<blockquote>✅ sᴜᴄᴄᴇssғᴜʟʟʏ ʟᴏɢɢᴇᴅ ɪɴᴛᴏ ᴍᴇɢᴀ.ɴᴢ..!</blockquote>")
+            else:
+                await status.edit(
+                    "⚠️ **ʟᴏɢɪɴ sᴜᴄᴄᴇssғᴜʟ, ʙᴜᴛ ғᴀɪʟᴇᴅ ᴛᴏ sᴀᴠᴇ sᴇssɪᴏɴ!**\n\n"
+                    "ᴛʜɪs ᴍᴇᴀɴs ᴛʜᴇ `/mega` ᴄᴏᴍᴍᴀɴᴅ ᴍɪɢʜᴛ ғᴀɪʟ.\n"
+                    "ᴘʟᴇᴀsᴇ ᴛʀʏ `/logout` ᴀɴᴅ `/login` ᴀɢᴀɪɴ."
+                )
         except Exception as e:
             await status.edit(f"❌ ʟᴏɢɪɴ ғᴀɪʟᴇᴅ: {str(e)}")
 
@@ -582,7 +589,7 @@ async def mega_help(client, message):
         f"📷 **ɪᴍᴀɢᴇs:** jpg, png, gif, webp, etc.\n"
         f"🎬 **ᴠɪᴅᴇᴏs:** mp4, mkv, avi, mov, etc.\n\n"
         f"**ᴇxᴀᴍᴘʟᴇ ʀᴇɴᴀᴍɪɴɢ:**\n"
-        f"📁 `movie.mp4` → `nyxking_20241201_143022_movie.mp4`\n\n"
+        f"📁 `movie.mp4` → `nyxking movie.mp4`\n\n"
         f"**💡 ᴛʜɪs ɪs ᴛʜᴇ ғᴀsᴛᴇsᴛ ᴍᴜʟᴛɪ-ᴜsᴇʀ ᴠᴇʀsɪᴏɴ ᴘᴏssɪʙʟᴇ!**\n"
         f"**🔥 ɴᴏ ᴍᴏʀᴇ ᴡᴀɪᴛɪɴɢ ғᴏʀ ᴏᴛʜᴇʀ ᴜsᴇʀs!**"
     )
