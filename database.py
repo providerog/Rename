@@ -10,7 +10,6 @@ class Database:
         self.client = motor.motor_asyncio.AsyncIOMotorClient(DB_URL)
         self.db = self.client[DB_NAME]
         self.users = self.db.users
-        self.user_data = self.db.users  # Alias for compatibility
         self.mega_sessions = self.db.mega_sessions
         self.premium_users = self.db.premium_users
         self.settings = self.db.settings
@@ -184,7 +183,7 @@ class Database:
     async def present_user(self, user_id: int):
         """Check if user exists in database"""
         try:
-            found = await self.user_data.find_one({'_id': user_id})
+            found = await self.users.find_one({'_id': user_id})
             return bool(found)
         except Exception as e:
             logger.error(f"Error checking user presence: {e}")

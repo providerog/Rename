@@ -55,27 +55,6 @@ def is_media_file(filename):
 
     return any(filename.lower().endswith(ext) for ext in media_exts)
 
-def generate_new_filename(old_filename, prefix):
-    """Generate new filename with prefix and timestamp"""
-    if not old_filename:
-        return None
-
-    # Get file extension
-    if '.' in old_filename:
-        name_part = old_filename.rsplit('.', 1)[0]
-        extension = '.' + old_filename.rsplit('.', 1)[1]
-    else:
-        name_part = old_filename
-        extension = ''
-
-    # Generate timestamp
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    # Create new filename: prefix_timestamp_originalname.ext
-    new_filename = f"{prefix}_{timestamp}_{name_part}{extension}"
-
-    return new_filename
-
 def get_file_extension(filename):
     """Get file extension"""
     if '.' in filename:
@@ -117,16 +96,7 @@ async def optimized_batch_rename_async(mega_session, batch_files, prefix, user_i
     """Async optimized batch rename with prefix only"""
     results = []
 
-    # Cache the files dict to avoid repeated calls
-    try:
-        all_files_cache = await asyncio.get_event_loop().run_in_executor(
-            None, mega_session.get_files
-        )
-    except:
-        all_files_cache = {}
-
     for i, (old_name, file_id) in enumerate(batch_files):
-        # Check if operation was cancelled
         if user_id in active_operations and not active_operations[user_id].get('active', True):
             break
 
@@ -135,56 +105,33 @@ async def optimized_batch_rename_async(mega_session, batch_files, prefix, user_i
                 results.append(('skipped', old_name, None))
                 continue
 
-            # Get file extension
-            extension = get_file_extension(old_name)
+            # Correct renaming logic to avoid data loss and collisions
+            new_name = f"{prefix} {old_name}"
 
-            # Create new name with just prefix + extension
-            new_name = f"{prefix}{extension}"
-
-            # Try direct rename first (run in executor to avoid blocking)
             try:
-                await asyncio.get_event_loop().run_in_executor(
-                    None, mega_session.rename, file_id, new_name
-                )
-                results.append(('success', old_name, new_name))
-                continue
-            except Exception as e1:
-                # Fallback to find method
-                try:
-                    files = await asyncio.get_event_loop().run_in_executor(
-                        None, mega_session.find, old_name
+                # Get the file node using its handle (file_id)
+                file_node = mega_session.files.get(file_id)
+                if file_node:
+                     await asyncio.get_event_loop().run_in_executor(
+                        None, mega_session.rename, file_node, new_name
                     )
-                    if files:
-                        if not isinstance(files, list):
-                            files = [files]
-
-                        for target_file in files:
-                            try:
-                                await asyncio.get_event_loop().run_in_executor(
-                                    None, mega_session.rename, target_file, new_name
-                                )
-                                results.append(('success', old_name, new_name))
-                                break
-                            except:
-                                continue
-                        else:
-                            results.append(('failed', old_name, f"Rename failed: {str(e1)}"))
-                    else:
-                        results.append(('failed', old_name, "File not found"))
-                except Exception as e2:
-                    results.append(('failed', old_name, f"Find failed: {str(e2)}"))
+                     results.append(('success', old_name, new_name))
+                else:
+                    results.append(('failed', old_name, "File node not found in session cache"))
+            except Exception as e:
+                logger.error(f"Rename failed for '{old_name}' with new name '{new_name}': {e}")
+                results.append(('failed', old_name, str(e)))
 
         except Exception as e:
+            logger.error(f"General error for '{old_name}': {e}")
             results.append(('failed', old_name, f"General error: {str(e)}"))
 
-        # Call progress callback if provided
         if progress_callback and (i + 1) % 10 == 0:
             try:
                 await progress_callback(i + 1, len(batch_files), results)
             except:
                 pass
 
-        # Small async delay
         await asyncio.sleep(0.01)
 
     return results
@@ -934,6 +881,51 @@ async def stats_command(client: Client, message: Message):
 
     except Exception as e:
         logger.error(f"Stats command error: {e}")
+        await message.reply(f"❌ **ᴇʀʀᴏʀ:** {str(e)}")
+
+@Client.on_message(filters.private & filters.command("broadcast") & filters.user(ADMINS))
+async def broadcast_message(client: Client, message: Message):
+    """Broadcast message to all users"""
+    try:
+        # Check if message is a reply
+        if not message.reply_to_message:
+            await message.reply("📝 **ᴘʟᴇᴀsᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴍᴇssᴀɢᴇ ᴛᴏ ʙʀᴏᴀᴅᴄᴀsᴛ**")
+            return
+
+        # Get all users
+        all_users = await db.get_all_users()
+        total_users = len(all_users)
+
+        # Confirmation message
+        confirmation_text = (
+            f"📢 **ᴄᴏɴғɪʀᴍ ʙʀᴏᴀᴅᴄᴀsᴛ**\n\n"
+            f"**ᴍᴇssᴀɢᴇ:** ᴡɪʟʟ ʙᴇ sᴇɴᴛ ᴛᴏ `{total_users:,}` ᴜsᴇʀs\n"
+            f"**ᴛʏᴘᴇ:** `{message.reply_to_message.media or 'ᴛᴇxᴛ'}`\n\n"
+            f"⚠️ **ᴛʜɪs ᴀᴄᴛɪᴏɴ ɪs ɪʀʀᴇᴠᴇʀsɪʙʟᴇ!**"
+        )
+
+        # Store broadcast data
+        broadcast_data[message.id] = {
+            "users": all_users,
+            "message": message.reply_to_message,
+            "text": message.reply_to_message.text
+        }
+
+        # Confirmation buttons
+        buttons = [
+            [
+                InlineKeyboardButton("✅ ᴄᴏɴғɪʀᴍ", callback_data=f"broadcast_confirm_{message.id}"),
+                InlineKeyboardButton("❌ ᴄᴀɴᴄᴇʟ", callback_data="broadcast_cancel")
+            ]
+        ]
+
+        await message.reply(
+            confirmation_text,
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+
+    except Exception as e:
+        logger.error(f"Broadcast command error: {e}")
         await message.reply(f"❌ **ᴇʀʀᴏʀ:** {str(e)}")
 
 
