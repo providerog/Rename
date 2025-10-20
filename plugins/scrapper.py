@@ -284,8 +284,9 @@ async def handle_mega_folder_processing_async(mega_session, message, prefix, use
 
         # Get all files and cache (run in executor to avoid blocking)
         logger.info("🔥 Getting all files and caching...")
-        all_files = await asyncio.get_event_loop().run_in_executor(
-            None, mega_session.get_files
+        all_files, _ = await asyncio.gather(
+            asyncio.get_event_loop().run_in_executor(None, mega_session.get_files),
+            asyncio.get_event_loop().run_in_executor(None, mega_session_2.get_files)
         )
 
         if not all_files:

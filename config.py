@@ -31,7 +31,7 @@ SAVE_CHAT = -1002728160601
 # 🗄️ DATABASE SETTINGS
 # ═══════════════════════════════════════════════════════════════════════════════════
 
-DB_URL = os.environ.get("DB_URL", "mongodb+srv://s42kf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+DB_URL = os.environ.get("DB_URL", "YOUR_MONGODB_CONNECTION_STRING")
 DB_NAME = os.environ.get("DB_NAME", "billu")
 
 # ═══════════════════════════════════════════════════════════════════════════════════
