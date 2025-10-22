@@ -30,7 +30,9 @@ class Bot(Client):
         self.username = None
 
     async def start(self):
+        print("Bot starting...")
         await super().start()
+        print("Bot started!")
         self.start_time = time.time()
         self.uptime = datetime.now()
 
