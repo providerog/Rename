@@ -14,13 +14,13 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 # 🔐 BOT CREDENTIALS & API SETTINGS
 # ═══════════════════════════════════════════════════════════════════════════════════
 
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "8044543440:AAGJDD5MCpQ7_3MEYkD-8ZAQqqSF87QzPic")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "7727434404:AAF3w1kpbhMglVzDoKLlrnwJQaBkHgBemwg")
 APP_ID = int(os.environ.get("APP_ID", "21816206"))
 API_ID = int(os.environ.get("APP_ID", "21816206"))
 API_HASH = os.environ.get("API_HASH", "0a82243f31819a62df76947196fdaa0a")
 
-OWNER_ID = int(os.environ.get("OWNER_ID", "7645440087"))
-OWNER_TAG = os.environ.get("OWNER_TAG", "provider_og")
+OWNER_ID = int(os.environ.get("OWNER_ID", "1418213560"))
+OWNER_TAG = os.environ.get("OWNER_TAG", "WhiteBeard_Sama")
 ADMIN_LIST = os.environ.get("ADMINS", "").split()
 ADMINS = [int(admin) for admin in ADMIN_LIST if admin.isdigit()]
 ADMINS.append(OWNER_ID)
@@ -101,13 +101,13 @@ You've reached the free limit of {free_limit} files!
 Contact admin to purchase premium!
 """
 
-OWNER_TAG = os.environ.get("OWNER_TAG", "provider_og")
+OWNER_TAG = os.environ.get("OWNER_TAG", "whiteBeard_Sama")
 
 # ═══════════════════════════════════════════════════════════════════════════════════
 # ⚙️ APP SETTINGS & CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════════════════════
 
-PORT = os.environ.get("PORT", "8000")
+PORT = os.environ.get("PORT", "7890")
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "100"))
 DEFAULT_WELCOME = ""
 
@@ -131,3 +131,4 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 def LOGGER(name: str) -> logging.Logger:
     return logging.getLogger(name)
+
